@@ -846,7 +846,12 @@ class MeioUploadBehavior extends ModelBehavior {
 
 			// Make the thumbnail reference absolute to avoid problems with phpThumb in CakePHP 2.0
 			$thumbSaveAs = WWW_ROOT . $thumbSaveAs;
+<<<<<<< HEAD
+			$saveAs = WWW_ROOT . $saveAs;
+			
+=======
 
+>>>>>>> 9f4df82c0323ecb930c2fd32f381a2ed5043c915
 			$params = array();
 			if (isset($value['width'])) {
 				$params['thumbWidth'] = $value['width'];
@@ -893,7 +898,25 @@ class MeioUploadBehavior extends ModelBehavior {
 			$params);
 
 		// Import phpThumb class
+<<<<<<< HEAD
 		$test = App::import('Vendor','phpthumb', array('file' => 'phpThumb' . DS . 'ThumbLib.inc.php'));
+=======
+		$test = App::import('Vendor','phpthumb', array('file' => 'phpThumb' . DS . 'phpthumb.class.php'));
+
+		// Configuring thumbnail settings
+		$phpThumb = new phpthumb;
+		$phpThumb->setSourceFilename($source);
+		$phpThumb->config_disable_debug = !Configure::read('debug');
+
+		if ($params['maxDimension'] == 'w') {
+			$phpThumb->w = $params['thumbWidth'];
+		} else if ($params['maxDimension'] == 'h') {
+			$phpThumb->h = $params['thumbHeight'];
+		} else {
+			$phpThumb->w = $params['thumbWidth'];
+			$phpThumb->h = $params['thumbHeight'];
+		}
+>>>>>>> 9f4df82c0323ecb930c2fd32f381a2ed5043c915
 
 		// Configuring thumbnail settings	
 		try {
