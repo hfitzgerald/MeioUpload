@@ -844,8 +844,9 @@ class MeioUploadBehavior extends ModelBehavior {
 			}
 
 			// Make the thumbnail reference absolute to avoid problems with phpThumb in CakePHP 2.0
-			$thumbSaveAs = WWW_ROOT . DIRECTORY_SEPARATOR . $thumbSaveAs;
-
+			$thumbSaveAs = WWW_ROOT . $thumbSaveAs;
+			$saveAs = WWW_ROOT . $saveAs;
+			
 			$params = array();
 			if (isset($value['width'])) {
 				$params['thumbWidth'] = $value['width'];
@@ -892,45 +893,17 @@ class MeioUploadBehavior extends ModelBehavior {
 			$params);
 
 		// Import phpThumb class
-		$test = App::import('Vendor','phpthumb', array('file' => 'phpThumb' . DS . 'phpthumb.class.php'));
+		$test = App::import('Vendor','phpthumb', array('file' => 'phpThumb' . DS . 'ThumbLib.inc.php'));
 
-		// Configuring thumbnail settings
-		$phpThumb = new phpthumb;
-		$phpThumb->setSourceFilename($source);
-
-		if ($params['maxDimension'] == 'w') {
-			$phpThumb->w = $params['thumbWidth'];
-		} else if ($params['maxDimension'] == 'h') {
-			$phpThumb->h = $params['thumbHeight'];
-		} else {
-			$phpThumb->w = $params['thumbWidth'];
-			$phpThumb->h = $params['thumbHeight'];
+		// Configuring thumbnail settings	
+		try {
+			$thumb = PhpThumbFactory::create($source);
+		} catch (Exception $e) {
+			debug($e);
 		}
-
-		$phpThumb->setParameter('zc', $this->__fields[$model->alias][$fieldName]['zoomCrop']);
-		if (isset($params['zoomCrop'])){
-			$phpThumb->setParameter('zc', $params['zoomCrop']);
-		}
-		if (isset($params['watermark'])){
-			$phpThumb->fltr = array("wmi|". IMAGES . $params['watermark']."|BR|50|5");
-		}
-		$phpThumb->q = $params['thumbnailQuality'];
-
-		$imageArray = explode(".", $source);
-		$phpThumb->config_output_format = $imageArray[1];
-		unset($imageArray);
-
-		$phpThumb->config_prefer_imagemagick = $this->__fields[$model->alias][$fieldName]['useImageMagick'];
-		$phpThumb->config_imagemagick_path = $this->__fields[$model->alias][$fieldName]['imageMagickPath'];
-
-		// Setting whether to die upon error
-		$phpThumb->config_error_die_on_error = true;
-		// Creating thumbnail
-		if ($phpThumb->GenerateThumbnail()) {
-			if (!$phpThumb->RenderToFile($target)) {
-				$this->_addError('Could not render image to: ' . $target);
-			}
-		}
+		
+		$thumb->adaptiveResize($params['thumbWidth'], $params['thumbHeight']);
+		$thumb->save($target);
 	}
 
 /**
